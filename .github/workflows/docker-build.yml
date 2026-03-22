@@ -13,7 +13,30 @@ permissions:
   packages: write
 
 jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      server: ${{ steps.changes.outputs.server }}
+      client: ${{ steps.changes.outputs.client }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect file changes
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            server:
+              - 'server/**'
+            client:
+              - 'client/**'
+
   test-api:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.server == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -34,22 +57,12 @@ jobs:
         working-directory: ./server
         run: npm test
 
-  build-and-push:
-    needs: test-api
+  build-server:
+    needs: [detect-changes, test-api]
+    if: |
+      needs.detect-changes.outputs.server == 'true' &&
+      (failure() != true)
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - service: server
-            context: ./server
-            dockerfile: ./server/Dockerfile
-            image: my-favorite-places-server
-          - service: client
-            context: ./client
-            dockerfile: ./client/Dockerfile
-            image: my-favorite-places-client
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -72,15 +85,54 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ steps.owner.outputs.namespace }}/${{ matrix.image }}
+          images: ghcr.io/${{ steps.owner.outputs.namespace }}/my-favorite-places-server
           tags: |
             type=raw,value=latest
 
-      - name: Build and push ${{ matrix.service }} image
+      - name: Build and push server image
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.context }}
-          file: ${{ matrix.dockerfile }}
+          context: ./server
+          file: ./server/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  build-client:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.client == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Normalize registry namespace
+        id: owner
+        run: echo "namespace=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ steps.owner.outputs.namespace }}/my-favorite-places-client
+          tags: |
+            type=raw,value=latest
+
+      - name: Build and push client image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./client
+          file: ./client/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
