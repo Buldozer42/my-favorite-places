@@ -38,5 +38,11 @@
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "skipLibCheck": true
-  }
+  },
+  "exclude": [
+    "dist",
+    "src/__tests__/**/*",
+    "src/**/*.test.ts",
+    "src/test/**/*"
+  ]
 }
