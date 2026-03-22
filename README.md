@@ -6,22 +6,36 @@ The client folder is empty, you may create an interface to communicate with the 
 
 # Installation
 
+First, clone the repo and cd into it:
 ```bash
-docker compose up -d
+git clone https://github.com/Buldozer42/my-favorite-places.git
+cd my-favorite-places
 ```
-Front : http://localhost:5173
-API : http://localhost:3000/api
+
+Then, build and run the Docker containers:
+```bash
+docker compose up --build
+```
+
+App will be available at http://localhost:5173
+
+## Running tests
+
+To run the tests, make sure the server is running and execute the following command in the `server` directory:
+```bash
+npm test
+```
 
 ## API Routes
 
 **Base URL:** `http://127.0.0.1:3000/api`
 
-Toutes les routes sont préfixées par `/api`.
+All routes are prefixed with `/api`.
 
 ### Users Routes
 
 #### POST `/api/users`
-Créer un nouvel utilisateur.
+Create a new user.
 
 **Body:**
 ```json
@@ -31,7 +45,7 @@ Créer un nouvel utilisateur.
 }
 ```
 
-**Réponse (200):**
+**Response (200):**
 ```json
 {
   "item": {
@@ -41,12 +55,12 @@ Créer un nouvel utilisateur.
 }
 ```
 
-**Erreurs:**
-- `400`: email et password requis
-- `500`: impossible de créer l'utilisateur
+**Errors:**
+- `400`: email and password are required
+- `500`: unable to create user
 
 #### POST `/api/users/tokens`
-Se connecter et obtenir un token d'authentification.
+Sign in and get an authentication token.
 
 **Body:**
 ```json
@@ -56,22 +70,22 @@ Se connecter et obtenir un token d'authentification.
 }
 ```
 
-**Réponse (200):**
+**Response (200):**
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
 
-**Erreurs:**
-- `400`: mauvaises credentials
+**Errors:**
+- `400`: invalid credentials
 
 #### GET `/api/users/me`
-Obtenir les informations de l'utilisateur connecté.
+Get the authenticated user's information.
 
-**Headers:** `Authorization: Bearer <token>` ou Cookie `token`
+**Headers:** `Authorization: Bearer <token>` or Cookie `token`
 
-**Réponse (200):**
+**Response (200):**
 ```json
 {
   "item": {
@@ -81,58 +95,58 @@ Obtenir les informations de l'utilisateur connecté.
 }
 ```
 
-**Erreurs:**
-- `401`: non autorisé
+**Errors:**
+- `401`: unauthorized
 
 ---
 
 ### Addresses Routes
 
 #### POST `/api/addresses`
-Créer une nouvelle adresse favorite.
+Create a new favorite address.
 
-**Headers:** `Authorization: Bearer <token>` ou Cookie `token`
+**Headers:** `Authorization: Bearer <token>` or Cookie `token`
 
 **Body:**
 ```json
 {
-  "name": "Mon restaurant préféré",
-  "description": "Un endroit incroyable",
+  "name": "My favorite restaurant",
+  "description": "An incredible place",
   "searchWord": "Tour Eiffel, Paris"
 }
 ```
 
-**Réponse (200):**
+**Response (200):**
 ```json
 {
   "item": {
     "id": 1,
-    "name": "Mon restaurant préféré",
-    "description": "Un endroit incroyable",
+    "name": "My favorite restaurant",
+    "description": "An incredible place",
     "lat": 48.8584,
     "lng": 2.2945
   }
 }
 ```
 
-**Erreurs:**
-- `400`: name et searchWord requis
-- `401`: non autorisé
-- `404`: adresse non trouvée
+**Errors:**
+- `400`: name and searchWord are required
+- `401`: unauthorized
+- `404`: address not found
 
 #### GET `/api/addresses`
-Obtenir toutes les adresses favorites de l'utilisateur connecté.
+Get all favorite addresses for the authenticated user.
 
-**Headers:** `Authorization: Bearer <token>` ou Cookie `token`
+**Headers:** `Authorization: Bearer <token>` or Cookie `token`
 
-**Réponse (200):**
+**Response (200):**
 ```json
 {
   "items": [
     {
       "id": 1,
-      "name": "Mon restaurant préféré",
-      "description": "Un endroit incroyable",
+      "name": "My favorite restaurant",
+      "description": "An incredible place",
       "lat": 48.8584,
       "lng": 2.2945
     }
@@ -140,13 +154,13 @@ Obtenir toutes les adresses favorites de l'utilisateur connecté.
 }
 ```
 
-**Erreurs:**
-- `401`: non autorisé
+**Errors:**
+- `401`: unauthorized
 
 #### POST `/api/addresses/searches`
-Rechercher des adresses dans un rayon donné à partir d'une position.
+Search addresses within a given radius from a position.
 
-**Headers:** `Authorization: Bearer <token>` ou Cookie `token`
+**Headers:** `Authorization: Bearer <token>` or Cookie `token`
 
 **Body:**
 ```json
@@ -159,14 +173,14 @@ Rechercher des adresses dans un rayon donné à partir d'une position.
 }
 ```
 
-**Réponse (200):**
+**Response (200):**
 ```json
 {
   "items": [
     {
       "id": 1,
-      "name": "Mon restaurant préféré",
-      "description": "Un endroit incroyable",
+      "name": "My favorite restaurant",
+      "description": "An incredible place",
       "lat": 48.8584,
       "lng": 2.2945
     }
@@ -174,6 +188,6 @@ Rechercher des adresses dans un rayon donné à partir d'une position.
 }
 ```
 
-**Erreurs:**
-- `400`: radius requis (nombre positif) ou from invalide
-- `401`: non autorisé
+**Errors:**
+- `400`: radius is required (positive number) or invalid from value
+- `401`: unauthorized
