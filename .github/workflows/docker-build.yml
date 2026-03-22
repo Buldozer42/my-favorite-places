@@ -57,6 +57,34 @@ jobs:
         working-directory: ./server
         run: npm test
 
+  test-client-e2e:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.client == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install client dependencies
+        working-directory: ./client
+        run: npm ci
+
+      - name: Run Cypress E2E tests
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: ./client
+          start: npm run dev -- --host 0.0.0.0 --port 5173
+          wait-on: http://localhost:5173
+          wait-on-timeout: 120
+          browser: electron
+
   build-server:
     needs: [detect-changes, test-api]
     if: |
@@ -99,7 +127,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   build-client:
-    needs: detect-changes
+    needs: [detect-changes, test-client-e2e]
     if: needs.detect-changes.outputs.client == 'true'
     runs-on: ubuntu-latest
     steps:
