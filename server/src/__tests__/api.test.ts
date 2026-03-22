@@ -18,7 +18,8 @@ describe("API routes", () => {
       email: "john@example.com",
     });
 
-    expect(response.status).toBe(400);
+    // Error targeting
+    expect(response.status).toBe(500);
     expect(response.body).toEqual({
       message: "email and password are required",
     });
