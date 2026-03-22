@@ -31,7 +31,11 @@ npm test
 ### E2E tests
 To run the end-to-end tests, make sure the server is running and execute the following command in the `client` directory:
 ```bash
-npm run e2e
+npm run cypress:open # (opens the Cypress test runner)
+# Or
+npm run cypress:run # (runs the tests in the CLI)
+# Or
+npm run cypress:run:headless # (runs the tests in headless mode)
 ```
 
 ## API Routes
