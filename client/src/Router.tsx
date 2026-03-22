@@ -23,14 +23,22 @@ export function Router() {
 
   useEffect(() => {
     async function getUser() {
-      const { data } = await axios.get("/api/users/me", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      try {
+        const { data } = await axios.get("/api/users/me", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
-      if (data?.item?.id) {
-        sessionStorage.setItem("user", data?.item);
+        if (data?.item?.id) {
+          sessionStorage.setItem("user", JSON.stringify(data.item));
+        } else {
+          sessionStorage.removeItem("user");
+          localStorage.removeItem("token");
+        }
+      } catch {
+        sessionStorage.removeItem("user");
+        localStorage.removeItem("token");
       }
 
       setReady(true);

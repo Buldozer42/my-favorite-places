@@ -9,9 +9,9 @@ import { useNavigate } from "react-router";
 export function SignupPage() {
   const navigate = useNavigate();
 
-  async function onSubmit(e: React.SubmitEvent<HTMLFormElement>) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form = new FormData(e.target);
+    const form = new FormData(e.currentTarget);
     const json = { email: form.get("email"), password: form.get("password") };
     const { data } = await axios.post<{ item: { id: number } }>(
       "/api/users",
@@ -20,7 +20,7 @@ export function SignupPage() {
 
     if (data?.item?.id) {
       toast.success("User created, you can signin");
-      navigate("/", { replace: true });
+      navigate("/signin", { replace: true });
     } else {
       toast.error("Unable to create user");
     }

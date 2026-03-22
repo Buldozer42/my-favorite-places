@@ -6,14 +6,19 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 
 export function SigninPage() {
-  async function onSubmit(e: React.SubmitEvent<HTMLFormElement>) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form = new FormData(e.target);
+    const form = new FormData(e.currentTarget);
     const json = { email: form.get("email"), password: form.get("password") };
-    const { data } = await axios.post<{ token: string }>(
-      "/api/users/tokens",
-      json,
-    );
+    let data: { token: string } | undefined;
+
+    try {
+      const response = await axios.post<{ token: string }>("/api/users/tokens", json);
+      data = response.data;
+    } catch {
+      toast.error("Unable to sign in");
+      return;
+    }
 
     if (data?.token) {
       const meResult = await axios.get("/api/users/me", {
@@ -22,9 +27,9 @@ export function SigninPage() {
 
       if (meResult.data?.item?.id) {
         localStorage.setItem("token", data?.token);
-        sessionStorage.setItem("user", meResult.data?.item);
+        sessionStorage.setItem("user", JSON.stringify(meResult.data.item));
         toast.success("You are connected");
-        location.href = "/";
+        location.href = "/dashboard";
       } else {
         toast.error("Unable to sign in");
       }
