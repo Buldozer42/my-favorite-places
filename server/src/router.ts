@@ -4,9 +4,9 @@ import addressesRouter from "./controllers/Addresses";
 
 const apiRouter = Router();
 
-// Route GET /hello qui renvoie "Bonjour !"
+// Route GET /hello qui renvoie "Hello !"
 apiRouter.get("/hello", (req, res) => {
-	res.send("Bonjour !");
+	res.send("Hello !");
 });
 
 apiRouter.use("/users", usersRouter);
